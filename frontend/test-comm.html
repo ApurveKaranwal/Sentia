@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communication Test</title>
+</head>
+<body>
+    <h1>Frontend-Backend Communication Test</h1>
+    <div id="results"></div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000';
+        const resultsDiv = document.getElementById('results');
+
+        async function testCommunication() {
+            resultsDiv.innerHTML = '<p>Testing communication...</p>';
+
+            try {
+                // Test stats endpoint
+                const statsResponse = await fetch(`${API_BASE_URL}/stats`);
+                const stats = await statsResponse.json();
+
+                resultsDiv.innerHTML += `<p>✅ Stats endpoint: ${statsResponse.status}</p>`;
+                resultsDiv.innerHTML += `<p>Stats data: ${JSON.stringify(stats)}</p>`;
+
+                // Test history endpoint
+                const historyResponse = await fetch(`${API_BASE_URL}/history`);
+                const history = await historyResponse.json();
+
+                resultsDiv.innerHTML += `<p>✅ History endpoint: ${historyResponse.status}</p>`;
+                resultsDiv.innerHTML += `<p>History items: ${history.length}</p>`;
+
+                resultsDiv.innerHTML += '<p style="color: green; font-weight: bold;">🎉 All communication tests passed!</p>';
+
+            } catch (error) {
+                resultsDiv.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        // Run test when page loads
+        window.addEventListener('load', testCommunication);
+    </script>
+</body>
+</html>

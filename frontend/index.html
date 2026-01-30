@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentia - Intelligent Video Analysis System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Theme Toggle -->
+        <div class="theme-toggle">
+            <button id="themeToggle" class="theme-btn">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <h1>Sentia</h1>
+                </div>
+                <p>AI-Powered Behavioral Analysis for Indian Speakers</p>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalAnalyses">0</span>
+                        <span class="stat-label">Analyses</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="successRate">100%</span>
+                        <span class="stat-label">Success Rate</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="avgConfidence">85%</span>
+                        <span class="stat-label">Avg Confidence</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Quick Stats Dashboard -->
+            <section class="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="videosAnalyzed">0</h3>
+                        <p>Videos Analyzed</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="dominantEmotion">Neutral</h3>
+                        <p>Most Common Emotion</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="genderSplit">50/50</h3>
+                        <p>Male/Female Ratio</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="ethicalScore">95%</h3>
+                        <p>Avg Ethical Score</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Input Section -->
+            <section class="input-section">
+                <div class="input-tabs">
+                    <button class="tab-btn active" data-tab="youtube">
+                        <i class="fab fa-youtube"></i>
+                        <span>YouTube URL</span>
+                    </button>
+                    <button class="tab-btn" data-tab="upload">
+                        <i class="fas fa-upload"></i>
+                        <span>Upload File</span>
+                    </button>
+                    <button class="tab-btn" data-tab="scrape">
+                        <i class="fas fa-search"></i>
+                        <span>Auto Scrape</span>
+                    </button>
+                    <button class="tab-btn" data-tab="batch">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Batch Analysis</span>
+                    </button>
+                </div>
+
+                <!-- YouTube Tab -->
+                <div class="tab-content active" id="youtube">
+                    <div class="input-card">
+                        <div class="input-header">
+                            <h3><i class="fab fa-youtube"></i> YouTube Video Analysis</h3>
+                            <p>Enter a YouTube URL to analyze the first 30 seconds</p>
+                        </div>
+                        <div class="input-group">
+                            <div class="input-field">
+                                <i class="fas fa-link"></i>
+                                <input type="url" id="youtubeUrl" placeholder="https://youtube.com/watch?v=..." required>
+                            </div>
+                            <button class="analyze-btn primary" onclick="analyzeVideo('youtube')">
+                                <i class="fas fa-magic"></i>
+                                <span>Analyze Video</span>
+                            </button>
+                        </div>
+                        <div class="input-features">
+                            <span class="feature-tag"><i class="fas fa-brain"></i> AI Analysis</span>
+                            <span class="feature-tag"><i class="fas fa-clock"></i> 30s Clip</span>
+                            <span class="feature-tag"><i class="fas fa-shield-alt"></i> Ethical</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Tab -->
+                <div class="tab-content" id="upload">
+                    <div class="input-card">
+                        <div class="input-header">
+                            <h3><i class="fas fa-upload"></i> File Upload Analysis</h3>
+                            <p>Upload a video file for behavioral analysis</p>
+                        </div>
+                        <div class="file-upload-area" onclick="document.getElementById('videoFile').click()">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="upload-text">
+                                <h4>Drop your video here or click to browse</h4>
+                                <p>Supported formats: MP4, MOV, AVI, WebM</p>
+                                <small>Maximum file size: 100MB • Recommended: 30 seconds or less</small>
+                            </div>
+                            <input type="file" id="videoFile" accept="video/*" hidden onchange="handleFileUpload(event)">
+                        </div>
+                        <div class="file-info" id="fileInfo" style="display: none;">
+                            <div class="file-details">
+                                <i class="fas fa-file-video"></i>
+                                <span id="fileName">No file selected</span>
+                                <span id="fileSize"></span>
+                            </div>
+                            <button class="analyze-btn primary" onclick="analyzeVideo('file')" id="analyzeFileBtn" style="display: none;">
+                                <i class="fas fa-play"></i>
+                                <span>Analyze File</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scrape Tab -->
+                <div class="tab-content" id="scrape">
+                    <div class="input-card">
+                        <div class="input-header">
+                            <h3><i class="fas fa-search"></i> Automated YouTube Scraping</h3>
+                            <p>Search and analyze multiple videos automatically</p>
+                        </div>
+                        <div class="input-group">
+                            <div class="input-field">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="scrapeQuery" placeholder="e.g., 'Indian speakers Hindi motivational'" required>
+                            </div>
+                            <div class="input-field small">
+                                <i class="fas fa-list-ol"></i>
+                                <input type="number" id="scrapeCount" placeholder="Count" min="1" max="5" value="3">
+                            </div>
+                            <button class="analyze-btn primary" onclick="scrapeVideos()">
+                                <i class="fas fa-search"></i>
+                                <span>Scrape & Analyze</span>
+                            </button>
+                        </div>
+                        <div class="scrape-info">
+                            <div class="info-item">
+                                <i class="fas fa-info-circle"></i>
+                                <span>This will search YouTube, download, and analyze videos matching your query</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Processing time: ~2-3 minutes per video</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Tab -->
+                <div class="tab-content" id="batch">
+                    <div class="input-card">
+                        <div class="input-header">
+                            <h3><i class="fas fa-layer-group"></i> Batch Analysis</h3>
+                            <p>Analyze multiple videos from a list of URLs</p>
+                        </div>
+                        <div class="batch-input">
+                            <textarea id="batchUrls" placeholder="Enter YouTube URLs (one per line):&#10;https://youtube.com/watch?v=...&#10;https://youtube.com/watch?v=...&#10;https://youtube.com/watch?v=..." rows="5"></textarea>
+                            <div class="batch-controls">
+                                <button class="analyze-btn secondary" onclick="clearBatch()">
+                                    <i class="fas fa-trash"></i>
+                                    Clear
+                                </button>
+                                <button class="analyze-btn primary" onclick="analyzeBatch()">
+                                    <i class="fas fa-play-circle"></i>
+                                    <span>Analyze Batch</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="batch-progress" id="batchProgress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="progressText">Processing videos...</span>
+                                <span id="progressCount">0/0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Loading Spinner -->
+            <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+                <div class="loading-container">
+                    <div class="spinner-modern">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                    </div>
+                    <div class="loading-text">
+                        <h3 id="loadingTitle">Analyzing Video...</h3>
+                        <p id="loadingSubtitle">This may take 10-30 seconds depending on video length</p>
+                        <div class="loading-steps">
+                            <div class="step active" id="step1">
+                                <i class="fas fa-download"></i>
+                                <span>Downloading/Loading</span>
+                            </div>
+                            <div class="step" id="step2">
+                                <i class="fas fa-brain"></i>
+                                <span>AI Analysis</span>
+                            </div>
+                            <div class="step" id="step3">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Generating Report</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="results-header">
+                    <div class="results-title">
+                        <h2><i class="fas fa-chart-line"></i> Analysis Results</h2>
+                        <div class="result-badges">
+                            <span class="badge success" id="faceDetectedBadge">
+                                <i class="fas fa-check"></i> Face Detected
+                            </span>
+                            <span class="badge info" id="confidenceBadge">
+                                <i class="fas fa-target"></i> High Confidence
+                            </span>
+                            <span class="badge ethical" id="ethicalBadge">
+                                <i class="fas fa-shield-alt"></i> Ethical Analysis
+                            </span>
+                        </div>
+                    </div>
+                    <div class="results-actions">
+                        <button class="btn secondary" onclick="exportResults()">
+                            <i class="fas fa-share"></i> Export
+                        </button>
+                        <button class="btn primary" onclick="clearResults()">
+                            <i class="fas fa-plus"></i> New Analysis
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Enhanced Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card emotion-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-face-smile"></i>
+                            </div>
+                            <div class="metric-title">
+                                <h3>Emotion</h3>
+                                <span class="metric-subtitle">Dominant Expression</span>
+                            </div>
+                        </div>
+                        <div class="metric-content">
+                            <div class="emotion-display">
+                                <span class="emotion-label" id="emotionLabel">Analyzing...</span>
+                                <div class="emotion-confidence">
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" id="emotionFill"></div>
+                                    </div>
+                                    <span class="confidence-text" id="emotionConfidence">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card gender-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="metric-title">
+                                <h3>Demographics</h3>
+                                <span class="metric-subtitle">Gender & Age</span>
+                            </div>
+                        </div>
+                        <div class="metric-content">
+                            <div class="demo-info">
+                                <div class="demo-item">
+                                    <span class="demo-label">Gender:</span>
+                                    <span class="demo-value" id="genderLabel">Unknown</span>
+                                </div>
+                                <div class="demo-item">
+                                    <span class="demo-label">Age Range:</span>
+                                    <span class="demo-value" id="ageRangeLabel">Unknown</span>
+                                </div>
+                                <div class="demo-item">
+                                    <span class="demo-label">Region:</span>
+                                    <span class="demo-value" id="regionLabel">Unknown</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card actions-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-running"></i>
+                            </div>
+                            <div class="metric-title">
+                                <h3>Actions</h3>
+                                <span class="metric-subtitle">Observable Behaviors</span>
+                            </div>
+                        </div>
+                        <div class="metric-content">
+                            <div class="actions-list" id="actionsList">
+                                <span class="no-data">No actions detected</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card attributes-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-glasses"></i>
+                            </div>
+                            <div class="metric-title">
+                                <h3>Attributes</h3>
+                                <span class="metric-subtitle">Visible Features</span>
+                            </div>
+                        </div>
+                        <div class="metric-content">
+                            <div class="attributes-list" id="attributesList">
+                                <span class="no-data">No attributes detected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Description -->
+                <div class="description-card">
+                    <div class="description-header">
+                        <h3><i class="fas fa-quote-left"></i> AI Behavioral Insight</h3>
+                        <div class="description-meta">
+                            <span class="meta-item">
+                                <i class="fas fa-language"></i>
+                                <span id="languageLabel">Unknown</span>
+                            </span>
+                            <span class="meta-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <span id="ethicalScoreLabel">95%</span>
+                            </span>
+                            <span class="meta-item">
+                                <i class="fas fa-clock"></i>
+                                <span id="timestampLabel">Just now</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="description-content">
+                        <p id="descriptionText">Waiting for analysis...</p>
+                    </div>
+                    <div class="disclaimer">
+                        <div class="disclaimer-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="disclaimer-text">
+                            <strong>Important:</strong> These are AI-generated behavioral insights based on computer vision analysis. Predictions are probabilistic and may not be accurate. No personal identification is performed. This analysis is for research purposes only.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Table -->
+                <div class="history-section">
+                    <div class="history-header">
+                        <h3><i class="fas fa-history"></i> Analysis History</h3>
+                        <div class="history-stats">
+                            <span class="stat-pill" id="totalRecords">0 records</span>
+                            <span class="stat-pill" id="lastUpdated">Updated just now</span>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters -->
+                    <div class="filter-section">
+                        <div class="filter-header">
+                            <h4><i class="fas fa-filter"></i> Advanced Filters</h4>
+                            <button class="filter-toggle" onclick="toggleFilters()">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="filter-controls" id="filterControls">
+                            <div class="filter-row">
+                                <div class="filter-group">
+                                    <label>Emotion</label>
+                                    <select id="emotionFilter">
+                                        <option value="">All Emotions</option>
+                                        <option value="happy">Happy</option>
+                                        <option value="sad">Sad</option>
+                                        <option value="angry">Angry</option>
+                                        <option value="neutral">Neutral</option>
+                                        <option value="surprise">Surprise</option>
+                                        <option value="fear">Fear</option>
+                                        <option value="disgust">Disgust</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Gender</label>
+                                    <select id="genderFilter">
+                                        <option value="">All Genders</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="unknown">Unknown</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Age Range</label>
+                                    <select id="ageFilter">
+                                        <option value="">All Ages</option>
+                                        <option value="18-25">18-25</option>
+                                        <option value="26-35">26-35</option>
+                                        <option value="36-45">36-45</option>
+                                        <option value="46-60">46-60</option>
+                                        <option value="60+">60+</option>
+                                        <option value="unknown">Unknown</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Region</label>
+                                    <select id="regionFilter">
+                                        <option value="">All Regions</option>
+                                        <option value="India">India</option>
+                                        <option value="India (North/Central)">India (North/Central)</option>
+                                        <option value="Global/Unknown">Global/Unknown</option>
+                                        <option value="unknown">Unknown</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="filter-actions">
+                                <button class="btn secondary small" onclick="clearFilters()">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </button>
+                                <button class="btn primary small" onclick="applyFilters()">
+                                    <i class="fas fa-search"></i> Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-hashtag"></i> Video ID</th>
+                                    <th><i class="fas fa-method"></i> Method</th>
+                                    <th><i class="fas fa-smile"></i> Emotion</th>
+                                    <th><i class="fas fa-user"></i> Gender</th>
+                                    <th><i class="fas fa-birthday-cake"></i> Age</th>
+                                    <th><i class="fas fa-map-marker-alt"></i> Region</th>
+                                    <th><i class="fas fa-percentage"></i> Confidence</th>
+                                    <th><i class="fas fa-calendar"></i> Date</th>
+                                    <th><i class="fas fa-cogs"></i> Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <tr class="empty-row">
+                                    <td colspan="9">
+                                        <div class="empty-state">
+                                            <i class="fas fa-inbox"></i>
+                                            <h4>No analysis history yet</h4>
+                                            <p>Start by analyzing a video above</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="history-actions">
+                        <div class="bulk-actions" id="bulkActions" style="display: none;">
+                            <span id="selectedCount">0 selected</span>
+                            <button class="btn secondary small" onclick="clearSelection()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                            <button class="btn primary small" onclick="exportSelected()">
+                                <i class="fas fa-download"></i> Export Selected
+                            </button>
+                        </div>
+                        <div class="export-actions">
+                            <button class="btn secondary" onclick="refreshHistory()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                            <button class="btn primary" onclick="downloadCSV()">
+                                <i class="fas fa-download"></i> Download All CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Error/Success Messages -->
+            <div class="message-overlay" id="messageOverlay" style="display: none;">
+                <div class="message-container">
+                    <div class="message-icon">
+                        <i class="fas fa-check-circle" id="messageIcon"></i>
+                    </div>
+                    <div class="message-content">
+                        <h3 id="messageTitle">Success!</h3>
+                        <p id="messageText">Operation completed successfully</p>
+                    </div>
+                    <button class="message-close" onclick="hideMessage()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage" style="display: none;">
+                <div class="error-content">
+                    <div class="error-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="error-text">
+                        <h3>Error</h3>
+                        <p id="errorText">Something went wrong</p>
+                    </div>
+                    <button class="error-close" onclick="hideError()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-brain"></i>
+                    <span>Sentia</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#" onclick="showAbout()">About</a>
+                    <a href="#" onclick="showPrivacy()">Privacy</a>
+                    <a href="#" onclick="showHelp()">Help</a>
+                </div>
+                <div class="footer-version">
+                    <span>v2.0.0</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
