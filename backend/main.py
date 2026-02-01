@@ -17,7 +17,7 @@ warnings.filterwarnings('ignore')
 
 # Flask app
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
+CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000", "http://localhost:5500", "http://127.0.0.1:5500"])
 
 # Create directories
 BASE_DIR = Path("video_analysis")
@@ -40,16 +40,36 @@ class VideoAnalyzer:
         self.mouth_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_smile.xml')
         
     def download_youtube_clip(self, url: str, output_path: str) -> str:
-        """Download first 30 seconds of YouTube video using yt-dlp"""
+        """Download YouTube video using yt-dlp (first 30s if ffmpeg available)"""
+        import shutil
+        has_ffmpeg = shutil.which('ffmpeg') is not None
+        
         ydl_opts = {
             'format': 'best[ext=mp4]/best',
             'outtmpl': output_path,
-            'download_sections': '*0-30',  # Download first 30 seconds only
+            'quiet': True,
+            'no_warnings': True,
         }
         
+        if has_ffmpeg:
+            print("ffmpeg found, downloading first 30 seconds only...")
+            ydl_opts['download_sections'] = '*0-30'
+        else:
+            print("ffmpeg NOT found, downloading full video (low quality forced to save bandwidth)...")
+            # Force lower quality to avoid massive downloads
+            ydl_opts['format'] = 'worst[ext=mp4]/worst'
+        
         try:
+            # ensure output path doesn't exist or is empty so yt-dlp writes to it
+            if os.path.exists(output_path):
+                os.remove(output_path)
+                
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
+            
+            if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+                 raise Exception("Download failed: File not created or empty")
+                 
             return output_path
         except Exception as e:
             raise Exception(f"Failed to download YouTube video: {str(e)}")
@@ -388,7 +408,14 @@ class VideoAnalyzer:
         """Language detection using speech recognition"""
         try:
             import speech_recognition as sr
-            from moviepy.editor import VideoFileClip
+            try:
+                from moviepy.editor import VideoFileClip
+            except ImportError:
+                try:
+                    from moviepy import VideoFileClip
+                except ImportError:
+                    print("moviepy not found or incompatible version")
+                    return "Language detection unavailable (missing moviepy)"
             
             # Extract audio from video
             video_clip = VideoFileClip(video_path)
@@ -569,8 +596,11 @@ def analyze_endpoint():
             youtube_url = request.form['youtube_url']
             input_method = request.form.get('input_method', 'youtube')
             
-            with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp:
-                video_path = analyzer.download_youtube_clip(youtube_url, tmp.name)
+            # Create a localized temp path but don't hold the file open
+            fd, temp_path = tempfile.mkstemp(suffix='.mp4')
+            os.close(fd) # Close it immediately to let other processes use it
+            
+            video_path = analyzer.download_youtube_clip(youtube_url, temp_path)
         else:
             return jsonify({'error': 'No video file or YouTube URL provided'}), 400
         
@@ -582,6 +612,8 @@ def analyze_endpoint():
         # Move to processed folder
         dest_path = PROCESSED_DIR / f"{video_id}.mp4"
         if input_method == "youtube":
+            if os.path.exists(dest_path):
+                os.remove(dest_path)
             os.rename(video_path, dest_path)
         else:
             import shutil

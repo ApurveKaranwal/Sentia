@@ -108,13 +108,13 @@ function handleAnalyzeClick(e) {
     const tabId = e.target.closest('.tab-content').id;
 
     switch(tabId) {
-        case 'youtube-tab':
+        case 'youtube':
             analyzeYouTubeVideo();
             break;
-        case 'upload-tab':
+        case 'upload':
             analyzeUploadedVideo();
             break;
-        case 'batch-tab':
+        case 'batch':
             startBatchAnalysis();
             break;
     }
